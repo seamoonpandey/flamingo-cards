@@ -8,7 +8,17 @@ import './PlayPage.css';
 function MultiplayerPlayPage() {
   const { packId, gameCode } = useParams();
   const navigate = useNavigate();
-  const pack = getPackById(packId);
+  
+  let pack = getPackById(packId);
+  if (packId === 'mixed') {
+    pack = {
+      id: 'mixed',
+      name: 'Mixed Deck',
+      icon: '🎲',
+      gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      questions: [] // Questions come from gameState
+    };
+  }
 
   // Get player info from sessionStorage
   const nickname = sessionStorage.getItem('playerNickname') || 'Player';
