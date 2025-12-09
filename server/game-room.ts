@@ -224,12 +224,14 @@ export default class GameRoom implements Party.Server {
 
         case "select-pack":
           console.log(`[${this.state.gameCode}] Received select-pack from ${playerId}. Is host? ${playerId && this.isHost(playerId)}`);
-          if (playerId && this.isHost(playerId) && this.state.status === "lobby") {
+          if (playerId && this.isHost(playerId) && (this.state.status === "lobby" || this.state.status === "finished")) {
             this.state.packId = data.packId;
             this.state.packName = data.packName;
             this.state.shuffledQuestions = this.state.settings.shuffleEnabled
               ? this.shuffleArray(data.questions)
               : data.questions;
+            // Reset to lobby status so we can see the "Start Game" button again if we were finished
+            this.state.status = "lobby";
             this.broadcast({ type: "state-sync", state: this.serializeState(), yourPlayerId: "" });
           } else {
             console.log(`[${this.state.gameCode}] Rejected select-pack: playerId=${playerId}, isHost=${playerId && this.isHost(playerId)}, status=${this.state.status}`);
