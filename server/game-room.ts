@@ -16,6 +16,15 @@ interface GameSettings {
   shuffleEnabled: boolean;
   allowSkip: boolean;
   hostOnlyControls: boolean;
+  gameMode: 'standard' | 'dice';
+  diceCount: number;
+}
+
+interface TurnState {
+  currentPlayerId: string | null;
+  diceRolls: number[];
+  isRolling: boolean;
+  cardRevealed: boolean;
 }
 
 interface GameState {
@@ -30,6 +39,7 @@ interface GameState {
   status: "lobby" | "playing" | "finished";
   hostId: string | null; // Persistent player ID of host
   createdAt: number;
+  turnState: TurnState;
 }
 
 // Message types
@@ -43,7 +53,11 @@ type ClientMessage =
   | { type: "shuffle" }
   | { type: "end-game" }
   | { type: "kick-player"; playerId: string }
-  | { type: "sync-request" };
+  | { type: "kick-player"; playerId: string }
+  | { type: "sync-request" }
+  | { type: "roll-dice" }
+  | { type: "reveal-card" }
+  | { type: "end-turn" };
 
 type ServerMessage =
   | { type: "state-sync"; state: SerializedGameState; yourPlayerId: string }
@@ -53,7 +67,10 @@ type ServerMessage =
   | { type: "card-changed"; index: number }
   | { type: "game-ended" }
   | { type: "error"; message: string }
-  | { type: "you-were-kicked" };
+  | { type: "error"; message: string }
+  | { type: "you-were-kicked" }
+  | { type: "dice-rolled"; rolls: number[] }
+  | { type: "turn-changed"; playerId: string };
 
 // Serialized version of game state (Map -> Array for JSON)
 interface SerializedGameState {
@@ -67,6 +84,7 @@ interface SerializedGameState {
   status: "lobby" | "playing" | "finished";
   hostId: string | null;
   playerCount: number;
+  turnState: TurnState;
 }
 
 // Avatar emojis for random assignment
@@ -89,10 +107,18 @@ export default class GameRoom implements Party.Server {
         shuffleEnabled: true,
         allowSkip: true,
         hostOnlyControls: true,
+        gameMode: 'standard',
+        diceCount: 1,
       },
       status: "lobby",
       hostId: null,
       createdAt: Date.now(),
+      turnState: {
+        currentPlayerId: null,
+        diceRolls: [],
+        isRolling: false,
+        cardRevealed: false,
+      },
     };
   }
 
@@ -114,6 +140,7 @@ export default class GameRoom implements Party.Server {
       status: this.state.status,
       hostId: this.state.hostId,
       playerCount: this.state.players.size,
+      turnState: this.state.turnState,
     };
   }
 
@@ -255,6 +282,17 @@ export default class GameRoom implements Party.Server {
             if (this.state.settings.shuffleEnabled) {
                this.state.shuffledQuestions = this.shuffleArray(this.state.shuffledQuestions);
             }
+            
+            // Initialize turn state for dice mode
+            if (this.state.settings.gameMode === 'dice') {
+              this.state.turnState = {
+                currentPlayerId: this.state.hostId, // Host starts
+                diceRolls: [],
+                isRolling: false,
+                cardRevealed: false,
+              };
+            }
+
             this.broadcast({ type: "game-started" });
             this.broadcast({ type: "state-sync", state: this.serializeState(), yourPlayerId: "" });
           }
@@ -315,9 +353,91 @@ export default class GameRoom implements Party.Server {
           }
           break;
 
-        case "sync-request":
+          case "sync-request":
           if (playerId) {
             this.sendToConnection(sender.id, { type: "state-sync", state: this.serializeState(), yourPlayerId: playerId });
+          }
+          break;
+
+        case "roll-dice":
+          if (playerId && this.state.status === "playing" && this.state.settings.gameMode === 'dice') {
+            // Check if it's player's turn
+            if (this.state.turnState.currentPlayerId !== playerId) return;
+            if (this.state.turnState.isRolling || this.state.turnState.cardRevealed) return;
+
+            this.state.turnState.isRolling = true;
+            
+            // Generate rolls
+            const count = this.state.settings.diceCount || 1;
+            const rolls: number[] = [];
+            let sum = 0;
+            for (let i = 0; i < count; i++) {
+              const roll = Math.floor(Math.random() * 6) + 1;
+              rolls.push(roll);
+              sum += roll;
+            }
+            this.state.turnState.diceRolls = rolls;
+
+            // Broadcast rolling state
+            this.broadcast({ type: "state-sync", state: this.serializeState(), yourPlayerId: "" });
+            this.broadcast({ type: "dice-rolled", rolls });
+
+            // Advance card after delay
+            setTimeout(() => {
+              this.state.turnState.isRolling = false;
+              this.state.turnState.cardRevealed = true; // Auto-reveal
+              
+              // Advance index, loop back if needed
+              let newIndex = this.state.currentCardIndex + sum;
+              if (newIndex >= this.state.shuffledQuestions.length) {
+                newIndex = newIndex % this.state.shuffledQuestions.length;
+              }
+              this.state.currentCardIndex = newIndex;
+              
+              this.broadcast({ type: "state-sync", state: this.serializeState(), yourPlayerId: "" });
+            }, 2000); // 2s animation time
+          }
+          break;
+
+        case "reveal-card":
+          if (playerId && this.state.status === "playing" && this.state.settings.gameMode === 'dice') {
+            if (this.state.turnState.currentPlayerId !== playerId) return;
+            if (this.state.turnState.isRolling) return;
+            
+            this.state.turnState.cardRevealed = true;
+            this.broadcast({ type: "state-sync", state: this.serializeState(), yourPlayerId: "" });
+          }
+          break;
+
+        case "end-turn":
+          if (playerId && this.state.status === "playing" && this.state.settings.gameMode === 'dice') {
+            if (this.state.turnState.currentPlayerId !== playerId) return;
+            
+            // Find next player
+            const playerIds = Array.from(this.state.players.keys());
+            const currentIndex = playerIds.indexOf(playerId);
+            let nextIndex = (currentIndex + 1) % playerIds.length;
+            
+            // Skip disconnected players
+            let attempts = 0;
+            while (attempts < playerIds.length) {
+               const nextId = playerIds[nextIndex];
+               const nextPlayer = this.state.players.get(nextId);
+               if (nextPlayer && nextPlayer.isConnected) {
+                 this.state.turnState.currentPlayerId = nextId;
+                 break;
+               }
+               nextIndex = (nextIndex + 1) % playerIds.length;
+               attempts++;
+            }
+
+            // Reset turn state
+            this.state.turnState.diceRolls = [];
+            this.state.turnState.isRolling = false;
+            this.state.turnState.cardRevealed = false;
+
+            this.broadcast({ type: "turn-changed", playerId: this.state.turnState.currentPlayerId || "" });
+            this.broadcast({ type: "state-sync", state: this.serializeState(), yourPlayerId: "" });
           }
           break;
       }

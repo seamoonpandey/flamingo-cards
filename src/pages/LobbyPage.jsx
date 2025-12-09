@@ -31,6 +31,7 @@ function LobbyPage() {
     selectPack,
     startGame,
     kickPlayer,
+    updateSettings,
   } = useGameSync({
     gameCode: gameCode || '',
     nickname: playerInfo.nickname,
@@ -220,6 +221,40 @@ function LobbyPage() {
         {/* Host Controls */}
         {isHost && (
           <div className="host-controls">
+            <div className="settings-panel">
+              <div className="setting-row">
+                <label>Game Mode</label>
+                <div className="mode-toggle">
+                  <button 
+                    className={`mode-btn ${gameState?.settings?.gameMode !== 'dice' ? 'active' : ''}`}
+                    onClick={() => updateSettings({ gameMode: 'standard' })}
+                  >
+                    Standard
+                  </button>
+                  <button 
+                    className={`mode-btn ${gameState?.settings?.gameMode === 'dice' ? 'active' : ''}`}
+                    onClick={() => updateSettings({ gameMode: 'dice' })}
+                  >
+                    Dice 🎲
+                  </button>
+                </div>
+              </div>
+              
+              {gameState?.settings?.gameMode === 'dice' && (
+                <div className="setting-row">
+                  <label>Number of Dice: {gameState?.settings?.diceCount || 1}</label>
+                  <input 
+                    type="range" 
+                    min="1" 
+                    max="3" 
+                    value={gameState?.settings?.diceCount || 1}
+                    onChange={(e) => updateSettings({ diceCount: parseInt(e.target.value) })}
+                    className="dice-slider"
+                  />
+                </div>
+              )}
+            </div>
+
             {!gameState?.packId && (
               <button className="select-pack-btn" onClick={() => setShowPackSelector(true)}>
                 📦 Select a Pack

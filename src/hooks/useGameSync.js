@@ -220,6 +220,9 @@ export function useGameSync({
     endGame,
     kickPlayer,
     requestSync,
+    rollDice: useCallback(() => send({ type: 'roll-dice' }), [send]),
+    revealCard: useCallback(() => send({ type: 'reveal-card' }), [send]),
+    endTurn: useCallback(() => send({ type: 'end-turn' }), [send]),
   };
 }
 

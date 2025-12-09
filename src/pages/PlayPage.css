@@ -303,3 +303,112 @@
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
+
+/* Dice Mode Styles */
+.play-main.dice-mode {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  justify-content: flex-start;
+  padding-top: 1rem;
+}
+
+.dice-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  z-index: 10;
+}
+
+.turn-indicator {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  padding: 0.75rem 1.5rem;
+  border-radius: 50px;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #fff;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  animation: slideDown 0.5s ease-out;
+}
+
+.dice-display {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  min-height: 80px;
+}
+
+.dice-actions {
+  display: flex;
+  gap: 1rem;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.action-btn {
+  padding: 0.875rem 1.5rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.roll-btn {
+  background: linear-gradient(135deg, #ff6b9d 0%, #c44569 100%);
+  color: #fff;
+}
+
+.reveal-btn {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  color: #fff;
+}
+
+.next-turn-btn {
+  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+  color: #1a1a2e;
+}
+
+.action-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+.action-btn:active {
+  transform: translateY(0);
+}
+
+/* Hidden Card State */
+.card-wrapper {
+  transition: all 0.5s ease-out;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.hidden-card {
+  opacity: 0;
+  transform: translateY(50px) scale(0.9);
+  pointer-events: none;
+}
+
+.dice-footer {
+  justify-content: center;
+}
+
+@keyframes slideDown {
+  from { transform: translateY(-20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}

@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useGameSync } from '../hooks/useGameSync';
 import { getPackById } from '../data/questionPacks';
 import Card from '../components/Card';
+import Dice from '../components/Dice';
 import './PlayPage.css';
 
 function MultiplayerPlayPage() {
@@ -34,6 +35,9 @@ function MultiplayerPlayPage() {
     prevCard,
     shuffleCards,
     endGame,
+    rollDice,
+    revealCard,
+    endTurn,
   } = useGameSync({
     gameCode: gameCode || '',
     nickname,
@@ -98,6 +102,10 @@ function MultiplayerPlayPage() {
   const currentQuestion = gameState.shuffledQuestions[gameState.currentCardIndex];
   const progress = ((gameState.currentCardIndex + 1) / gameState.shuffledQuestions.length) * 100;
   const connectedPlayers = gameState.players.filter(p => p.isConnected);
+  const isDiceMode = gameState.settings.gameMode === 'dice';
+  const turnState = gameState.turnState;
+  const isMyTurn = turnState?.currentPlayerId === me?.id;
+  const currentPlayer = gameState.players.find(p => p.id === turnState?.currentPlayerId);
 
   return (
     <div className="play-page multiplayer">
@@ -164,15 +172,54 @@ function MultiplayerPlayPage() {
       </div>
 
       {/* Card Area */}
-      <main className="play-main">
+      <main className={`play-main ${isDiceMode ? 'dice-mode' : ''}`}>
+        {isDiceMode && (
+          <div className="dice-section">
+            <div className="turn-indicator">
+              {isMyTurn ? "It's your turn!" : `It's ${currentPlayer?.nickname}'s turn`}
+            </div>
+            
+            <div className="dice-display">
+              {turnState?.diceRolls.length > 0 ? (
+                turnState.diceRolls.map((val, i) => (
+                  <Dice key={i} value={val} rolling={turnState.isRolling} />
+                ))
+              ) : (
+                // Show placeholder dice if no rolls yet
+                Array(gameState.settings.diceCount || 1).fill(0).map((_, i) => (
+                  <Dice key={i} value={1} rolling={false} />
+                ))
+              )}
+            </div>
+
+            {isMyTurn && (
+              <div className="dice-actions">
+                {!turnState?.diceRolls.length && !turnState?.isRolling && (
+                  <button className="action-btn roll-btn" onClick={rollDice}>
+                    🎲 Roll Dice
+                  </button>
+                )}
+                
+                {turnState?.cardRevealed && (
+                  <button className="action-btn next-turn-btn" onClick={endTurn}>
+                    Next Turn ➡️
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
         {currentQuestion && (
-          <Card 
-            key={gameState.currentCardIndex}
-            question={currentQuestion} 
-            packGradient={pack.gradient}
-            packIcon={pack.icon}
-            packName={pack.name}
-          />
+          <div className={`card-wrapper ${isDiceMode && !turnState?.cardRevealed ? 'hidden-card' : ''}`}>
+            <Card 
+              key={gameState.currentCardIndex}
+              question={currentQuestion} 
+              packGradient={pack.gradient}
+              packIcon={pack.icon}
+              packName={pack.name}
+            />
+          </div>
         )}
       </main>
 
@@ -184,33 +231,47 @@ function MultiplayerPlayPage() {
       )}
 
       {/* Bottom Navigation */}
-      <footer className="play-footer">
-        <button 
-          className="nav-btn"
-          onClick={prevCard}
-          disabled={!canControl || gameState.currentCardIndex === 0}
-        >
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-            <path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-        </button>
+      {/* Bottom Navigation - Hide in Dice Mode */}
+      {!isDiceMode && (
+        <footer className="play-footer">
+          <button 
+            className="nav-btn"
+            onClick={prevCard}
+            disabled={!canControl || gameState.currentCardIndex === 0}
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
 
-        <div className="card-counter">
-          <span className="current">{gameState.currentCardIndex + 1}</span>
-          <span className="divider">/</span>
-          <span className="total">{gameState.shuffledQuestions.length}</span>
-        </div>
+          <div className="card-counter">
+            <span className="current">{gameState.currentCardIndex + 1}</span>
+            <span className="divider">/</span>
+            <span className="total">{gameState.shuffledQuestions.length}</span>
+          </div>
 
-        <button 
-          className="nav-btn primary"
-          onClick={nextCard}
-          disabled={!canControl || gameState.currentCardIndex === gameState.shuffledQuestions.length - 1}
-        >
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-            <path d="M9 18l6-6-6-6" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-        </button>
-      </footer>
+          <button 
+            className="nav-btn primary"
+            onClick={nextCard}
+            disabled={!canControl || gameState.currentCardIndex === gameState.shuffledQuestions.length - 1}
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d="M9 18l6-6-6-6" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
+        </footer>
+      )}
+      
+      {/* Dice Mode Footer Info */}
+      {isDiceMode && (
+        <footer className="play-footer dice-footer">
+          <div className="card-counter">
+            <span className="current">Card {gameState.currentCardIndex + 1}</span>
+            <span className="divider">/</span>
+            <span className="total">{gameState.shuffledQuestions.length}</span>
+          </div>
+        </footer>
+      )}
     </div>
   );
 }
