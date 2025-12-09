@@ -248,9 +248,13 @@ export default class GameRoom implements Party.Server {
           break;
 
         case "start-game":
-          if (playerId && this.isHost(playerId) && this.state.status === "lobby" && this.state.packId) {
+          if (playerId && this.isHost(playerId) && (this.state.status === "lobby" || this.state.status === "finished") && this.state.packId) {
             this.state.status = "playing";
             this.state.currentCardIndex = 0;
+            // Reshuffle if needed when restarting
+            if (this.state.settings.shuffleEnabled) {
+               this.state.shuffledQuestions = this.shuffleArray(this.state.shuffledQuestions);
+            }
             this.broadcast({ type: "game-started" });
             this.broadcast({ type: "state-sync", state: this.serializeState(), yourPlayerId: "" });
           }
