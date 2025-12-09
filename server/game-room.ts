@@ -280,8 +280,14 @@ export default class GameRoom implements Party.Server {
 
         case "shuffle":
           if (playerId && this.canControl(playerId) && this.state.status === "playing") {
-            this.state.shuffledQuestions = this.shuffleArray(this.state.shuffledQuestions);
-            this.state.currentCardIndex = 0;
+            // Only shuffle the remaining cards, keep the played ones in order
+            const playedCards = this.state.shuffledQuestions.slice(0, this.state.currentCardIndex + 1);
+            const remainingCards = this.state.shuffledQuestions.slice(this.state.currentCardIndex + 1);
+            const shuffledRemaining = this.shuffleArray(remainingCards);
+            
+            this.state.shuffledQuestions = [...playedCards, ...shuffledRemaining];
+            // currentCardIndex remains the same
+            
             this.broadcast({ type: "state-sync", state: this.serializeState(), yourPlayerId: "" });
           }
           break;

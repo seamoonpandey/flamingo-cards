@@ -10,6 +10,7 @@ function LobbyPage() {
   const [showShareModal, setShowShareModal] = useState(false);
   const [copied, setCopied] = useState(false);
   const [showPackSelector, setShowPackSelector] = useState(false);
+  const [selectedPackIds, setSelectedPackIds] = useState(new Set());
 
   // Memoize player info from sessionStorage to prevent re-renders
   const playerInfo = useMemo(() => ({
@@ -90,8 +91,40 @@ function LobbyPage() {
     }
   };
 
-  const handleSelectPack = (pack) => {
-    selectPack(pack.id, pack.name, pack.questions);
+  const togglePackSelection = (packId) => {
+    const newSelection = new Set(selectedPackIds);
+    if (newSelection.has(packId)) {
+      newSelection.delete(packId);
+    } else {
+      newSelection.add(packId);
+    }
+    setSelectedPackIds(newSelection);
+  };
+
+  const handleSelectAll = () => {
+    setSelectedPackIds(new Set(questionPacks.map(p => p.id)));
+  };
+
+  const handleClearSelection = () => {
+    setSelectedPackIds(new Set());
+  };
+
+  const handleConfirmPackSelection = () => {
+    if (selectedPackIds.size === 0) return;
+
+    if (selectedPackIds.size === 1) {
+      const packId = Array.from(selectedPackIds)[0];
+      const pack = questionPacks.find(p => p.id === packId);
+      if (pack) {
+        selectPack(pack.id, pack.name, pack.questions);
+      }
+    } else {
+      // Mixed pack
+      const selectedPacks = questionPacks.filter(p => selectedPackIds.has(p.id));
+      const allQuestions = selectedPacks.flatMap(p => p.questions);
+      
+      selectPack('mixed', `Mixed Deck (${selectedPacks.length} packs)`, allQuestions);
+    }
     setShowPackSelector(false);
   };
 
@@ -238,23 +271,45 @@ function LobbyPage() {
           <div className="modal-content pack-modal" onClick={(e) => e.stopPropagation()}>
             <h3>Choose a Pack</h3>
             <div className="pack-list">
-              {questionPacks.map((pack) => (
-                <button
-                  key={pack.id}
-                  className="pack-option"
-                  onClick={() => handleSelectPack(pack)}
-                >
-                  <span className="pack-icon">{pack.icon}</span>
-                  <div className="pack-details">
-                    <span className="pack-title">{pack.name}</span>
-                    <span className="pack-count">{pack.questions.length} questions</span>
-                  </div>
-                </button>
-              ))}
+              {questionPacks.map((pack) => {
+                const isSelected = selectedPackIds.has(pack.id);
+                return (
+                  <button
+                    key={pack.id}
+                    className={`pack-option ${isSelected ? 'selected' : ''}`}
+                    onClick={() => togglePackSelection(pack.id)}
+                  >
+                    <div className="pack-checkbox">
+                      {isSelected && <span>✓</span>}
+                    </div>
+                    <span className="pack-icon">{pack.icon}</span>
+                    <div className="pack-details">
+                      <span className="pack-title">{pack.name}</span>
+                      <span className="pack-count">{pack.questions.length} questions</span>
+                    </div>
+                  </button>
+                );
+              })}
             </div>
-            <button className="close-modal-btn" onClick={() => setShowPackSelector(false)}>
-              Cancel
-            </button>
+            <div className="pack-modal-actions">
+              <div className="selection-controls">
+                <button className="text-btn" onClick={handleSelectAll}>Select All</button>
+                <button className="text-btn" onClick={handleClearSelection}>Clear</button>
+              </div>
+              <div className="main-actions">
+                <button className="cancel-btn" onClick={() => setShowPackSelector(false)}>
+                  Cancel
+                </button>
+                <button 
+                  className="confirm-btn" 
+                  onClick={handleConfirmPackSelection}
+                  disabled={selectedPackIds.size === 0}
+                >
+                  Confirm ({selectedPackIds.size})
+                </button>
+              </div>
+            </div>
+
           </div>
         </div>
       )}
