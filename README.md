@@ -1,33 +1,33 @@
-# 🦩 Flamingo Cards
+# Flamingo Cards
 
-> A premium, real-time multiplayer card game for deep conversations and fun parties.
+> A premium, real-time multiplayer card game for deep conversations and engaging social interactions.
 
 ![Flamingo Cards Banner](src/assets/docs/flamingo_banner.png)
 
-**Flamingo Cards** is a modern web application designed to bring people together through meaningful questions and fun challenges. Whether you're at a party, on a date, or hanging out with friends, Flamingo Cards provides the perfect icebreakers and conversation starters.
+**Flamingo Cards** is a modern web application designed to facilitate meaningful connections through curated questions and interactive challenges. The platform provides structured conversation prompts suitable for various social settings, from casual gatherings to intimate conversations.
 
 ## Features
 
-- **Real-time Multiplayer**: Connect with friends instantly using a unique game code. No login required!
-- **Live Synchronization**: Game state, card flips, and player actions are synced in real-time across all devices using [PartyKit](https://partykit.io/).
-- **Diverse Card Packs**: Choose from a wide variety of packs including:
-  - 🌊 **Deep Questions**: For meaningful conversations.
-  - 💕 **Couple's Convos**: To strengthen relationships.
-  - 🔥 **Dare to Share**: Spicy challenges for the brave.
-  - 🌶️ **Unpopular Opinions**: Spark debates with hot takes.
-  - ...and many more!
-- **Host Controls**: The host can manage the game, change packs, and kick players.
-- **Responsive Design**: Works beautifully on mobile, tablet, and desktop.
-- **Premium Aesthetics**: A sleek, dark-mode interface with smooth animations and glassmorphism effects.
+- **Real-time Multiplayer**: Connect with friends instantly using a unique game code. No authentication required.
+- **Live Synchronization**: Game state, card flips, and player actions are synchronized in real-time across all devices using [PartyKit](https://partykit.io/).
+- **Diverse Card Packs**: Choose from a wide variety of themed packs including:
+  - **Deep Questions**: For meaningful conversations and introspection.
+  - **Couple's Convos**: To strengthen relationships and improve communication.
+  - **Dare to Share**: Interactive challenges for adventurous participants.
+  - **Unpopular Opinions**: Thought-provoking prompts to spark engaging debates.
+  - Additional themed packs for various occasions and group dynamics.
+- **Host Controls**: The host has administrative privileges to manage the game, change packs, and moderate participants.
+- **Responsive Design**: Optimized user experience across mobile, tablet, and desktop devices.
+- **Premium Aesthetics**: Modern dark-mode interface featuring smooth animations and glassmorphism design elements.
 
-## 📸 Screenshots
+## Screenshots
 
 |                       Lobby                       |                        Gameplay                         |
 | :-----------------------------------------------: | :-----------------------------------------------------: |
 | ![Lobby Screen](src/assets/docs/lobby_mockup.png) | ![Gameplay Screen](src/assets/docs/gameplay_mockup.png) |
 |        _Join games and choose your avatar_        |           _Swipe through cards in real-time_            |
 
-## 🚀 Getting Started
+## Getting Started
 
 Follow these steps to get the project running on your local machine.
 
@@ -38,14 +38,15 @@ Follow these steps to get the project running on your local machine.
 
 ### Installation
 
-1.  **Clone the repository**
+1. **Clone the repository**
 
     ```bash
     git clone https://github.com/yourusername/flamingo-cards.git
     cd flamingo-cards
     ```
 
-2.  **Install dependencies**
+2. **Install dependencies**
+
     ```bash
     npm install
     ```
@@ -54,7 +55,7 @@ Follow these steps to get the project running on your local machine.
 
 To run the full application (Client + Server), you need to run both the Vite development server and the PartyKit server.
 
-1.  **Start the development server**
+1. **Start the development server**
 
     ```bash
     npm run dev
@@ -62,25 +63,27 @@ To run the full application (Client + Server), you need to run both the Vite dev
 
     This will start the frontend at `http://localhost:5173`.
 
-2.  **Start the PartyKit server**
+2. **Start the PartyKit server**
+
     ```bash
     npm run party
     ```
+
     This will start the backend server at `http://127.0.0.1:1999`.
 
-> **Note:** Both commands must be running for the multiplayer features to work.
+> **Note:** Both the development server and PartyKit server must be running concurrently for multiplayer functionality.
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 - **Frontend**: [React](https://react.dev/), [Vite](https://vitejs.dev/), CSS Modules
 - **Backend / Real-time**: [PartyKit](https://partykit.io/) (WebSockets, Durable Objects)
 - **Routing**: [React Router](https://reactrouter.com/)
-- **State Management**: React Hooks + WebSocket Sync
-- **Icons**: Emoji & SVG
+- **State Management**: React Hooks with WebSocket synchronization
+- **Icons**: SVG and Unicode characters
 
-## 📂 Project Structure
+## Project Structure
 
-```
+```sh
 flamingo/
 ├── server/
 │   └── game-room.ts       # PartyKit server logic (Game State, WebSocket handlers)
@@ -95,12 +98,12 @@ flamingo/
 └── package.json           # Project dependencies and scripts
 ```
 
-## 🤝 Contributing
+## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+Contributions are welcome. To contribute to this project:
 
-1.  Fork the project
-2.  Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3.  Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4.  Push to the branch (`git push origin feature/AmazingFeature`)
-5.  Open a Pull Request
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/FeatureName`)
+3. Commit your changes (`git commit -m 'Add FeatureName'`)
+4. Push to the branch (`git push origin feature/FeatureName`)
+5. Submit a Pull Request with a detailed description of your changes
