@@ -239,8 +239,10 @@ export default class GameRoom implements Party.Server {
           break;
 
         case "update-settings":
-          if (playerId && this.isHost(playerId) && this.state.status === "lobby") {
+          if (playerId && this.isHost(playerId) && (this.state.status === "lobby" || this.state.status === "finished")) {
             this.state.settings = { ...this.state.settings, ...data.settings };
+            // Reset to lobby status if we were finished
+            this.state.status = "lobby";
             this.broadcast({ type: "state-sync", state: this.serializeState(), yourPlayerId: "" });
           }
           break;
