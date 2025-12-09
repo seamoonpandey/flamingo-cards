@@ -1,0 +1,196 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap');
+
+:root {
+  /* Flamingo Brand Colors - Authentic */
+  --flamingo-coral: #FF6B6B;
+  --flamingo-pink: #FF8E8E;
+  --flamingo-light: #FFB4B4;
+  --flamingo-hot: #FF4757;
+  --flamingo-deep: #EE5A5A;
+  
+  /* Primary Gradient - The Flamingo Signature */
+  --gradient-flamingo: linear-gradient(135deg, #FF6B6B 0%, #FF8E8E 50%, #FFA8A8 100%);
+  --gradient-card: linear-gradient(180deg, #FF6B6B 0%, #FF5252 100%);
+  --gradient-dark: linear-gradient(180deg, #1a1a1a 0%, #0d0d0d 100%);
+  
+  /* Background - Dark Theme */
+  --bg-primary: #0a0a0a;
+  --bg-secondary: #141414;
+  --bg-card: #1a1a1a;
+  --bg-elevated: #222222;
+  
+  /* Text Colors */
+  --text-primary: #ffffff;
+  --text-secondary: rgba(255, 255, 255, 0.7);
+  --text-muted: rgba(255, 255, 255, 0.4);
+  
+  /* Shadows */
+  --shadow-card: 0 20px 60px rgba(255, 107, 107, 0.15);
+  --shadow-pack: 0 8px 32px rgba(0, 0, 0, 0.4);
+  --shadow-glow: 0 0 40px rgba(255, 107, 107, 0.3);
+  
+  /* Spacing */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+  --space-3xl: 64px;
+  
+  /* Border Radius - Rounded like iOS */
+  --radius-sm: 12px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-xl: 32px;
+  --radius-full: 9999px;
+  
+  /* Typography - Poppins like Flamingo */
+  --font-main: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
+  
+  /* Transitions */
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-bounce: 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  font-size: 16px;
+}
+
+body {
+  font-family: var(--font-main);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  padding: 14px 28px;
+  font-family: var(--font-main);
+  font-weight: 600;
+  font-size: 1rem;
+  border: none;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: all var(--transition-normal);
+}
+
+.btn-primary {
+  background: var(--gradient-flamingo);
+  color: white;
+  box-shadow: var(--shadow-glow);
+}
+
+.btn-primary:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 50px rgba(255, 107, 107, 0.4);
+}
+
+.btn-primary:active {
+  transform: scale(0.98);
+}
+
+/* Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.02); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.6s ease forwards;
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.4s ease forwards;
+}
+
+/* Scrollbar - Minimal */
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 107, 107, 0.3);
+  border-radius: var(--radius-full);
+}
+
+/* Focus */
+*:focus-visible {
+  outline: 2px solid var(--flamingo-coral);
+  outline-offset: 2px;
+}
+
+/* Selection */
+::selection {
+  background: rgba(255, 107, 107, 0.3);
+}
+
+/* Utility */
+.container {
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 0 var(--space-lg);
+}
+
+.gradient-text {
+  background: var(--gradient-flamingo);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}

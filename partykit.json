@@ -1,0 +1,5 @@
+{
+  "name": "flamingo-party",
+  "main": "server/game-room.ts",
+  "compatibilityDate": "2024-01-01"
+}
