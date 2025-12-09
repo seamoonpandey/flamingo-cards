@@ -412,3 +412,44 @@
   from { opacity: 0; }
   to { opacity: 1; }
 }
+
+/* Scattered Dice Styles */
+.dice-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 50;
+}
+
+.scattered-dice {
+  position: absolute;
+  /* Transitions are handled inline in JS */
+}
+
+.dice-placeholder {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 2rem;
+  opacity: 0.5;
+  transform: scale(0.8);
+}
+
+/* Ensure dice container doesn't block clicks when not rolling */
+.dice-section {
+  pointer-events: none;
+  width: 100%;
+}
+
+.dice-actions {
+  pointer-events: auto;
+  margin-top: auto;
+  padding-bottom: 2rem;
+  display: flex;
+  justify-content: center;
+}
+
+.turn-indicator {
+  pointer-events: auto;
+  margin-top: 1rem;
+}

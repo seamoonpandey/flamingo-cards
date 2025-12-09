@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useGameSync } from '../hooks/useGameSync';
 import { getPackById } from '../data/questionPacks';
@@ -85,6 +85,53 @@ function MultiplayerPlayPage() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [canControl, nextCard, prevCard, isHost, endGame, navigate]);
 
+  // Dice animation state - moved to top level to avoid hook order errors
+  const [diceStyles, setDiceStyles] = useState([]);
+  const lastRollsRef = useRef('');
+
+  // Handle dice toss animation
+  useEffect(() => {
+    const turnState = gameState?.turnState;
+    if (!turnState) return;
+    
+    const rollsStr = JSON.stringify(turnState.diceRolls);
+    
+    if (turnState.isRolling && turnState.diceRolls && turnState.diceRolls.length > 0) {
+      // Only animate if we haven't animated these rolls yet
+      if (lastRollsRef.current !== rollsStr) {
+        lastRollsRef.current = rollsStr;
+        
+        // 1. Start at bottom center
+        const startStyles = turnState.diceRolls.map(() => ({
+          top: '110vh',
+          left: '50%',
+          transform: 'translate(-50%, 0) rotate(0deg)',
+          transition: 'none',
+          opacity: 1
+        }));
+        setDiceStyles(startStyles);
+
+        // 2. Animate to random positions
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            const endStyles = turnState.diceRolls.map(() => ({
+              top: `${20 + Math.random() * 40}%`, // 20-60% from top
+              left: `${10 + Math.random() * 80}%`, // 10-90% from left
+              transform: `translate(-50%, -50%) rotate(${Math.random() * 360}deg)`,
+              transition: 'all 1.5s cubic-bezier(0.25, 1, 0.5, 1)',
+              opacity: 1
+            }));
+            setDiceStyles(endStyles);
+          });
+        });
+      }
+    } else if (!turnState.isRolling && (!turnState.diceRolls || turnState.diceRolls.length === 0)) {
+      // Reset/Hide when not rolling and no rolls (new turn)
+      setDiceStyles([]);
+      lastRollsRef.current = '';
+    }
+  }, [gameState?.turnState?.isRolling, gameState?.turnState?.diceRolls]);
+
   if (!pack || !gameState) {
     return (
       <div className="play-page">
@@ -99,13 +146,20 @@ function MultiplayerPlayPage() {
     );
   }
 
-  const currentQuestion = gameState.shuffledQuestions[gameState.currentCardIndex];
-  const progress = ((gameState.currentCardIndex + 1) / gameState.shuffledQuestions.length) * 100;
-  const connectedPlayers = gameState.players.filter(p => p.isConnected);
-  const isDiceMode = gameState.settings.gameMode === 'dice';
+  const shuffledQuestions = gameState.shuffledQuestions || [];
+  const players = gameState.players || [];
+  
+  const currentQuestion = shuffledQuestions[gameState.currentCardIndex];
+  const progress = shuffledQuestions.length > 0 
+    ? ((gameState.currentCardIndex + 1) / shuffledQuestions.length) * 100 
+    : 0;
+  const connectedPlayers = players.filter(p => p.isConnected);
+  const isDiceMode = gameState.settings?.gameMode === 'dice';
   const turnState = gameState.turnState;
   const isMyTurn = turnState?.currentPlayerId === me?.id;
-  const currentPlayer = gameState.players.find(p => p.id === turnState?.currentPlayerId);
+  const currentPlayer = players.find(p => p.id === turnState?.currentPlayerId);
+  
+
 
   return (
     <div className="play-page multiplayer">
@@ -179,24 +233,39 @@ function MultiplayerPlayPage() {
               {isMyTurn ? "It's your turn!" : `It's ${currentPlayer?.nickname}'s turn`}
             </div>
             
-            <div className="dice-display">
-              {turnState?.diceRolls.length > 0 ? (
+            {/* Scattered Dice Overlay */}
+            <div className="dice-overlay">
+              {turnState?.diceRolls?.length > 0 ? (
                 turnState.diceRolls.map((val, i) => (
-                  <Dice key={i} value={val} rolling={turnState.isRolling} />
+                  <div 
+                    key={i} 
+                    className="scattered-dice"
+                    style={diceStyles[i] || { opacity: 0 }} // Hide if no style yet
+                  >
+                    <Dice value={val} rolling={turnState.isRolling} />
+                  </div>
                 ))
               ) : (
-                // Show placeholder dice if no rolls yet
-                Array(gameState.settings.diceCount || 1).fill(0).map((_, i) => (
-                  <Dice key={i} value={1} rolling={false} />
-                ))
+                // Placeholder dice (static, centered)
+                <div className="dice-placeholder">
+                   {Array(gameState.settings?.diceCount || 1).fill(0).map((_, i) => (
+                    <Dice key={i} value={1} rolling={false} />
+                  ))}
+                </div>
               )}
             </div>
 
             {isMyTurn && (
               <div className="dice-actions">
-                {!turnState?.diceRolls.length && !turnState?.isRolling && (
+                {!turnState?.diceRolls?.length && !turnState?.isRolling && (
                   <button className="action-btn roll-btn" onClick={rollDice}>
                     🎲 Roll Dice
+                  </button>
+                )}
+                
+                {turnState?.diceRolls?.length > 0 && !turnState?.isRolling && !turnState?.cardRevealed && (
+                  <button className="action-btn reveal-btn" onClick={revealCard}>
+                    👀 Reveal Card
                   </button>
                 )}
                 
