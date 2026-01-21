@@ -51,6 +51,19 @@ Follow these steps to get the project running on your local machine.
     npm install
     ```
 
+3. **Start the development server**
+
+    ```bash
+    npm run dev
+    ```
+
+## Deployment
+
+For instructions on how to deploy this project to production, please see [DEPLOY.md](DEPLOY.md).
+
+    npm install
+    ```
+
 ### Running Locally
 
 To run the full application (Client + Server), you need to run both the Vite development server and the PartyKit server.
